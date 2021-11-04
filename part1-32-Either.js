@@ -25,9 +25,11 @@ class Right{
 
 function parseJSON(str){
   try{
-    Right.of(JSON.parse(str))
+    return Right.of(JSON.parse(str))
   }
-  catch(err){
-    Left.map(err)
+  catch(msg){
+    return Left.of({error:msg})
   }
 }
+const r = parseJSON('{"name":"ZS"}')
+console.log(r)
