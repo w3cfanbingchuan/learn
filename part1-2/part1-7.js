@@ -10,4 +10,4 @@ promise.then(function(res){
 },function(err){
   console.log('error:',err)
 })
-console.log(111111)
+console.log(111111) 
