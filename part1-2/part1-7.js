@@ -3,6 +3,8 @@
 //     resolve(100)
 //   },1000)
 
+// const { reject } = require("lodash")
+
 //   // reject('is error')
 // })
 // promise.then(function(res){
@@ -11,87 +13,120 @@
 //   console.log('error:',err)
 // })
 // console.log(111111)
-const PADDING = 'padding'
-const FULFILLED = 'fulfulled'
+
+const PENDING = 'pending'
+const FULFILED = 'fulfiled'
 const REJECTED = 'rejected'
+
 class MyPromise {
-  constructor(executor) {
-    executor(this.resolve, this.reject)
-  }
 
-  status = PADDING
-  successValue = undefined;
-  rejValue = undefined;
-  successCallBack = [];
-  failCallBack = [];
-  resolve = (value) => {
-    if (this.status != PADDING) return;
-    this.status = FULFILLED
-    this.successValue = value;
-    // this.successCallBack && this.successCallBack(this.successValue)
-    while (this.successCallBack.length) {
-      this.successCallBack.shift()(this.successValue)
+  constructor(fn) {
+    fn(this.resolve, this.reject)
+  }
+  status = PENDING
+  value = undefined;
+  resolveCallBack = []
+  rejectCallBack = []
+  resolve = value => {
+    // 判断当前状态 如果不是padding状态 则不可更改
+    if (this.status !== PENDING) return;
+    this.status = FULFILED;
+    this.value = value;
+    while (this.resolveCallBack.length) {
+      this.resolveCallBack.shift()()
     }
   }
 
-  reject = (value) => {
-    if (this.status != PADDING) return;
-    this.status = REJECTED
-    this.rejValue = value
-    console.log(value)
-    // this.failCallBack && this.failCallBack(this.rejValue)
-    while (this.failCallBack.length) {
-      this.failCallBack.shift()(this.rejValue)
+  reject = value => {
+    console.log(this.status,'初始')
+    if (this.status !== PENDING) return;
+    this.status = REJECTED;
+    this.value = value;
+    console.log(this.status,'更改后')
+    while (this.rejectCallBack.length) {
+      this.rejectCallBack.shift()()
     }
   }
-  then(fulCallBack, rejectCallBack) {
+
+  then(resolveCallBack, rejectCallBack) {
+    resolveCallBack = resolveCallBack ? resolveCallBack : value => value
+    rejectCallBack = rejectCallBack ? rejectCallBack : value => value
     let promise2 = new MyPromise((resolve, reject) => {
-      if (this.status === FULFILLED) {
+      console.log(this.status,'1111111')
+      if (this.status == FULFILED) {
         setTimeout(() => {
-          let x = fulCallBack(this.successValue)
-          resolvePromise(promise2, x, resolve, reject)
-        })
+          let res = resolveCallBack(this.value)
+          resolvePromise(res, promise2, resolve, reject)
+        }, 0)
 
-      } else if (this.status === REJECTED) {
+      } else if (this.status == REJECTED) {
         setTimeout(() => {
-          let r = rejectCallBack(this.rejValue)
-          resolvePromise(promise2, r, resolve, reject)
-        })
+          let res = rejectCallBack(this.value)
+          resolvePromise(res, promise2, resolve, reject)
+        }, 0)
       } else {
-        this.successCallBack.push(()=>{
-          fulCallBack(this.successValue)
-        });
-        this.failCallBack.push(rejectCallBack);
+        this.resolveCallBack.push(() => {
+          setTimeout(() => {
+            let res = resolveCallBack(this.value)
+            resolvePromise(res, promise2, resolve, reject)
+          }, 0)
+        })
+        this.rejectCallBack.push(() => {
+          setTimeout(() => {
+            let res = rejectCallBack(this.value)
+            resolvePromise(res, promise2, resolve, reject)
+          }, 0)
+        })
       }
     })
-    return promise2
-
+    return promise2;
   }
 
+  finally(callBack) {
+    console.log(this.status)
+    return this.then(value=>{
+      return MyPromise.resolve(callBack()).then(()=>value)
+    },(reason)=>{
+      return MyPromise.resolve(callBack()).then(()=>{throw reason})
+    })
+  }
+  catch(failCallBack){
+    return this.then(undefined,failCallBack)
+  }
+
+  static all(array) {
+    let result = []
+
+    return new MyPromise((resolve, reject) => {
+      setTimeout(() => {
+        for (let i = 0, len = array.length; i < len; i++) {
+          if (array[i] instanceof MyPromise) {
+            array[i].then((value) => result.push(value), reason => reject(reason))
+          } else {
+            result.push(array[i])
+          }
+        }
+        resolve(result)
+      }, 0)
+
+    })
+  }
+
+  static resolve(value) {
+    if (value instanceof MyPromise) return value;
+    return new Promise(resolve => resolve(value))
+  }
 }
-function resolvePromise(sePromie, promise, resolve, reject) {
-  if (promise === sePromie) {
-    return reject('不能自己重复调用')
+function resolvePromise(backPromise, curPromise, resolve, reject) {
+  if (backPromise === curPromise) {
+    return reject(new TypeError('调用promise重复'))
   }
-  if (promise instanceof MyPromise) {
-    promise.then(resolve, reject)
+  if (backPromise instanceof MyPromise) {
+    backPromise.then(resolve, reject)
   } else {
-    resolve(promise)
+    resolve(backPromise)
   }
 }
 
-let r = new MyPromise((resolve, reject) => {
-  setTimeout(()=>{
-    resolve('成功....')
-  },2000)
-  // resolve('成功')
-  // reject('失败')
-})
-r.then((res)=>{
-  console.log(res)
-  return 'aaa'
-}).then((res)=>{
-  console.log(res)
-})
 
-// module.exports = MyPromise
+module.exports = MyPromise;
