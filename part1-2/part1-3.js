@@ -39,9 +39,9 @@ const MyPromise = require('./part1-7')
 //   })
 // })
 
-let p2 = new MyPromise((resolve, reject) => {
-  reject('失败')
-})
+// let p2 = new MyPromise((resolve, reject) => {
+//   reject('失败')
+// })
 
 // MyPromise.resolve(10).then(res=>{
 //   console.log(res)
@@ -53,8 +53,45 @@ let p2 = new MyPromise((resolve, reject) => {
 // p2.finally(res=>{
 //   console.log(res)
 // })
-p2.then(res=>{
+// p2.then(res=>{
+//   console.log(res)
+// }).catch(reason=>{
+//   console.log(reason)
+// })
+// p2.then().then().then((res)=>{
+//   console.log('第三次then 成功',res)
+// },(res)=>{
+//   console.log('第三次then 失败',res)
+// })
+
+
+let p = new MyPromise((resolve,reject)=>{
+  // setTimeout(()=>{
+  //   reject('失败')
+  // },1000)
+  resolve('成功')
+  // reject('失败')
+})
+// let p1 = p.then(res=>{
+//   return p1
+// })
+p.then(res=>{
   console.log(res)
-}).catch(reason=>{
-  console.log(reason)
+  return new MyPromise((resolve,reject)=>{
+    // setTimeout(()=>{
+    //   reject('失败')
+    // },1000)
+    // resolve('成功')
+    reject('失败')
+  })
+},res=>{
+  
+}).then(res=>{
+  console.log(res,1111111)
+},res=>[
+  console.log(res)
+]).then(res=>{
+  console.log(res)
+},res=>{
+  console.log(res,3333)
 })
