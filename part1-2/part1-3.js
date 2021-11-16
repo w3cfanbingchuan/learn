@@ -65,33 +65,45 @@ const MyPromise = require('./part1-7')
 // })
 
 
-let p = new MyPromise((resolve,reject)=>{
+let p = new MyPromise((resolve, reject) => {
   // setTimeout(()=>{
   //   reject('失败')
   // },1000)
-  resolve('成功')
+  // resolve('成功22')
+  reject('失败')
+})
+
+
+let p2 = new MyPromise((resolve, reject) => {
+  // setTimeout(()=>{
+  //   resolve(411)
+  // },1000)
+  resolve('成功1111111111')
   // reject('失败')
 })
-// let p1 = p.then(res=>{
-//   return p1
+
+
+// MyPromise.all(['a','b',p]).then(res=>{
+//   console.log(res,'cheng')
+// },res=>{
+//   console.log(res,'shib')
+// })
+
+// MyPromise.resolve(p).then(res=>{
+//   console.log(res)
+// },res=>{
+//   console.log(res,'失败')
+// })
+
+// p2.finally(res=>{
+//   return p
+// }).then(res=>{
+//   console.log(res,'111')
+// },res=>{
+//   console.log(res,'222')
 // })
 p.then(res=>{
+  console.log(res,'111')
+}).catch(res=>{
   console.log(res)
-  return new MyPromise((resolve,reject)=>{
-    // setTimeout(()=>{
-    //   reject('失败')
-    // },1000)
-    // resolve('成功')
-    reject('失败')
-  })
-},res=>{
-  
-}).then(res=>{
-  console.log(res,1111111)
-},res=>[
-  console.log(res)
-]).then(res=>{
-  console.log(res)
-},res=>{
-  console.log(res,3333)
 })

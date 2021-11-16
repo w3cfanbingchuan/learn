@@ -2,11 +2,6 @@
 //   setTimeout(function(){
 //     resolve(100)
 //   },1000)
-
-// const { reject } = require("lodash")
-
-//   // reject('is error')
-// })
 // promise.then(function(res){
 //   console.log('success',res)
 // },function(err){
@@ -174,7 +169,7 @@ class MyPromise {
     this.static = FULFILLED;
     this.value = value
     while (this.onFulfilledCallBack.length) {
-      this.onFulfilledCallBack.shift()(this.value)
+      this.onFulfilledCallBack.shift()()
     }
   }
   reject = reason => {
@@ -183,31 +178,108 @@ class MyPromise {
     // 将状态更改为Rejected
     this.static = REJECTED;
     this.value = reason
+    // 依次调用then回调
     while (this.onRejectedCallBack.length) {
-      this.onRejectedCallBack.shift()(this.value)
+      this.onRejectedCallBack.shift()()
     }
   }
   then(onFulfilled, onRejected) {
-
+    onFulfilled = onFulfilled ? onFulfilled : value => value;
+    onRejected = onRejected ? onRejected : reason => { throw reason };
     let MyPromise2 = new MyPromise((resoleve, reject) => {
       if (this.static === FULFILLED) {
         setTimeout(() => {
-          let x = onFulfilled(this.value)
-          // 提取公共方法
-          promiseCallBack(x, MyPromise2, resoleve, reject)
-        },0)
+          // then中 如果执行异常则执行reject 否则执行成功回调
+          try {
+            let x = onFulfilled(this.value)
+            // 提取公共方法
+            promiseCallBack(x, MyPromise2, resoleve, reject)
+          } catch (error) {
+            reject(error)
+          }
+
+        }, 0)
 
       } else if (this.static === REJECTED) {
         setTimeout(() => {
-          let x = onRejected(this.value)
-          promiseCallBack(x, MyPromise2, resoleve, reject)
-        },0)
+          try {
+            let x = onRejected(this.value)
+            promiseCallBack(x, MyPromise2, resoleve, reject)
+          } catch (error) {
+            reject(error)
+          }
+
+        }, 0)
       } else {
-        this.onFulfilledCallBack.push(onFulfilled)
-        this.onRejectedCallBack.push(onRejected)
+        this.onFulfilledCallBack.push(() => {
+          setTimeout(() => {
+            try {
+              let x = onFulfilled(this.value)
+              // 提取公共方法
+              promiseCallBack(x, MyPromise2, resoleve, reject)
+            } catch (error) {
+              reject(error)
+            }
+
+          }, 0)
+        })
+        this.onRejectedCallBack.push(() => {
+          setTimeout(() => {
+            try {
+              let x = onRejected(this.value)
+              promiseCallBack(x, MyPromise2, resoleve, reject)
+            } catch (error) {
+              reject(error)
+            }
+
+          }, 0)
+        })
       }
     })
     return MyPromise2;
+  }
+  static all(array) {
+    let reasult = [];
+    let cont = 0;
+    return new MyPromise((resolve, reject) => {
+      let addArray = (value) => {
+        reasult[cont] = value;
+        cont++;
+        if (cont == array.length) {
+          resolve(reasult)
+        }
+      }
+      for (let i = 0, len = array.length; i < len; i++) {
+        // 判断当前值是普通值还是promise对象
+        if (array[i] instanceof MyPromise) {
+          array[i].then((value) => addArray(value), reason => reject(reason))
+        } else {
+          addArray(array[i])
+        }
+      }
+    })
+  }
+  static resolve(value) {
+    // 判断value为promise对象还是普通值
+    if (value instanceof MyPromise) {
+      // 如果为promise对象
+      return value
+    } else {
+      return new MyPromise(resoleve => resoleve(value))
+    }
+  }
+  catch(failedCallBack) {
+    // 返回失败时候的回调
+    return this.then(undefined, failedCallBack)
+  }
+
+  finally(callBack) {
+    return this.then(value => {
+      // 根据callBack()状态返回调用时返回的value
+      return MyPromise.resolve(callBack()).then(() => value)
+    }, reason => {
+      return MyPromise.resolve(callBack()).then(() => { throw reason })
+    })
   }
 }
 function promiseCallBack(x, newPromise, resoleve, reject) {
@@ -225,5 +297,8 @@ function promiseCallBack(x, newPromise, resoleve, reject) {
   }
 
 }
+
+
 module.exports = MyPromise;
+
 
