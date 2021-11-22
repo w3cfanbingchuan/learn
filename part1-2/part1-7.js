@@ -184,16 +184,22 @@ class MyPromise {
     }
   }
   then(onFulfilled, onRejected) {
-    onFulfilled = onFulfilled ? onFulfilled : value => value;
-    onRejected = onRejected ? onRejected : reason => { throw reason };
+
+
+    // onFulfilled = onFulfilled ? onFulfilled : value => value;
+    // onRejected = onRejected ? onRejected : reason => { throw reason };
     let MyPromise2 = new MyPromise((resoleve, reject) => {
       if (this.static === FULFILLED) {
         setTimeout(() => {
           // then中 如果执行异常则执行reject 否则执行成功回调
           try {
-            let x = onFulfilled(this.value)
-            // 提取公共方法
-            promiseCallBack(x, MyPromise2, resoleve, reject)
+            if (Object.prototype.toString.call(onFulfilled) !== '[object Function]') {
+              resoleve(this.value)
+            } else {
+              let x = onFulfilled(this.value)
+              // 提取公共方法
+              promiseCallBack(x, MyPromise2, resoleve, reject)
+            }
           } catch (error) {
             reject(error)
           }
@@ -203,8 +209,12 @@ class MyPromise {
       } else if (this.static === REJECTED) {
         setTimeout(() => {
           try {
-            let x = onRejected(this.value)
-            promiseCallBack(x, MyPromise2, resoleve, reject)
+            if (Object.prototype.toString.call(onFulfilled) !== '[object Function]') {
+              reject(this.value)
+            } else {
+              let x = onRejected(this.value)
+              promiseCallBack(x, MyPromise2, resoleve, reject)
+            }
           } catch (error) {
             reject(error)
           }
@@ -214,9 +224,13 @@ class MyPromise {
         this.onFulfilledCallBack.push(() => {
           setTimeout(() => {
             try {
-              let x = onFulfilled(this.value)
-              // 提取公共方法
-              promiseCallBack(x, MyPromise2, resoleve, reject)
+              if (Object.prototype.toString.call(onFulfilled) !== '[object Function]') {
+                resoleve(this.value)
+              } else {
+                let x = onFulfilled(this.value)
+                // 提取公共方法
+                promiseCallBack(x, MyPromise2, resoleve, reject)
+              }
             } catch (error) {
               reject(error)
             }
@@ -226,8 +240,12 @@ class MyPromise {
         this.onRejectedCallBack.push(() => {
           setTimeout(() => {
             try {
-              let x = onRejected(this.value)
-              promiseCallBack(x, MyPromise2, resoleve, reject)
+              if (Object.prototype.toString.call(onFulfilled) !== '[object Function]') {
+                reject(this.value)
+              } else {
+                let x = onRejected(this.value)
+                promiseCallBack(x, MyPromise2, resoleve, reject)
+              }
             } catch (error) {
               reject(error)
             }
@@ -299,6 +317,21 @@ function promiseCallBack(x, newPromise, resoleve, reject) {
 }
 
 
-module.exports = MyPromise;
+// module.exports = MyPromise;
 
 
+
+
+
+let p = new MyPromise((resolve, reject) => {
+  // setTimeout(()=>{
+  //   reject('失败')
+  // },1000)
+  resolve('成功22')
+  // reject('失败')
+})
+p.then(10).then(20).then(res => {
+  console.log(res)
+}, res => {
+  console.log(res)
+})

@@ -1,4 +1,5 @@
 const MyPromise = require('./part1-7')
+const { endsWith } = require('lodash')
 
 // console.log('global begin')
 // setTimeout(function timer1() {
@@ -65,22 +66,26 @@ const MyPromise = require('./part1-7')
 // })
 
 
-let p = new MyPromise((resolve, reject) => {
+let p = new Promise((resolve, reject) => {
   // setTimeout(()=>{
   //   reject('失败')
   // },1000)
-  // resolve('成功22')
-  reject('失败')
-})
-
-
-let p2 = new MyPromise((resolve, reject) => {
-  // setTimeout(()=>{
-  //   resolve(411)
-  // },1000)
-  resolve('成功1111111111')
+  resolve('成功22')
   // reject('失败')
 })
+p.then(10).then(20).then(res=>{
+  console.log(res)
+},res=>{
+  console.log(res)
+})
+
+// let p2 = new MyPromise((resolve, reject) => {
+//   // setTimeout(()=>{
+//   //   resolve(411)
+//   // },1000)
+//   resolve('成功1111111111')
+//   // reject('失败')
+// })
 
 
 // MyPromise.all(['a','b',p]).then(res=>{
@@ -102,8 +107,78 @@ let p2 = new MyPromise((resolve, reject) => {
 // },res=>{
 //   console.log(res,'222')
 // })
-p.then(res=>{
-  console.log(res,'111')
-}).catch(res=>{
-  console.log(res)
-})
+// p.then(res=>{
+//   console.log(res,'111')
+// }).catch(res=>{
+//   console.log(res)
+// })
+
+
+// class Person {
+//   constructor(name) {
+//     this.name = name
+//   }
+//   say() {
+//     console.log(`my name is ${this.name}`)
+//   }
+// }
+
+//  class Student extends Person{
+//    constructor(name,age){
+//       super(name)
+//       this.age = age;
+//    }
+//    hello(){
+//      super.say();
+//      console.log(`I am ${this.age} years old`)
+//    }
+//  }
+//  const s = new Student('tom',18)
+//  s.hello()
+
+// let obj = {
+//   store: ['aaa', 'bbb', 'ccc', 'ddd'],
+//   [Symbol.iterator]: function () {
+//     let index = 0;
+//     const self = this
+//     return {
+//       next: function () {
+//         const result = {
+//           value: self.store[index],
+//           done: index >= self.store.length
+//         }
+//         index++
+//         return result
+//       }
+//     }
+//   }
+// }
+// for (let item of obj) {
+//   console.log(item)
+// }
+
+
+// let obj = {
+//   sotre:[1,2,3,4,5,6],
+//   [Symbol.iterator]: function () {
+//     let index = 0;
+//     const self = this;
+//     return {
+//       next: function () {
+//         const result = {
+//           value: self.sotre[index],
+//           done: index >= self.sotre.length
+//         }
+//         index ++
+//         return result
+//       }
+//     }
+//   }
+// }
+// for(let item of obj){
+//   console.log(item)
+// }
+
+
+// const arr = [1,2,3,4,5,]
+// console.log(arr.length)
