@@ -1,4 +1,5 @@
-var hello = function (name) {
-    console.log("Hello ".concat(name));
+"use strict";
+let hello = (name) => {
+    console.log(`Hello ${name}`);
 };
 hello('tom');
