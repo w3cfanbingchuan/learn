@@ -335,3 +335,16 @@ p.then(10).then(20).then(res => {
 }, res => {
   console.log(res)
 })
+
+
+var a = 10
+function foo(ac){
+  return function(b){
+    console.log(b+(++ac))
+  }
+}
+let fn = foo(10)
+fn(5)
+foo(6)(7)
+fn(20)
+console.log(a)
